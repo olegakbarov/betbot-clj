@@ -14,7 +14,9 @@
             [betbot.constants :as constants]
             [betbot.layout :as layout]))
 
-(defn get-all [] get-all)
+(defn get-all [_]
+  {:status 200
+   :body {:results (events/find-all)}})
 
 (defn create-event [{event :body}]
   (let [new-event (events/create event)]

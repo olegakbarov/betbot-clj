@@ -14,7 +14,14 @@
   (pk :id)
   (table :events)
   (has-many bets)
-  (entity-fields :title :start :end :category :subcategory))
+  (entity-fields
+    :title
+    :starts_at
+    :ends_at
+    :category
+    :subcategory
+    :created_at
+    :updated_at))
 
 (defentity bets
   (pk :id)

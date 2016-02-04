@@ -6,5 +6,5 @@
   (insert e/events
     (values event)))
 
-(defn get-all []
+(defn find-all []
   (select e/events))

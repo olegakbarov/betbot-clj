@@ -93,7 +93,7 @@
 
                    :env {:dev true
                          :host "http://localhost:3449"
-                         :betbot-db "betbot_dev"
+                         :betbot-db "betbot"
                          :betbot-db-user "betbot"
                          :betbot-db-pass "yolo"}}
 
