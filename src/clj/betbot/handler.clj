@@ -1,6 +1,6 @@
 (ns betbot.handler
   (:require [environ.core :refer [env]]
-            [compojure.core :refer [GET defroutes context]]
+            [compojure.core :refer [GET POST PUT DELETE defroutes context]]
             [compojure.route :refer [not-found resources]]
 
             [ring.util.response :refer [redirect]]
@@ -9,15 +9,43 @@
             [ring.middleware.json :refer [wrap-json-response]]
             [prone.middleware :refer [wrap-exceptions]]
 
+            [betbot.models.events :as events]
+
             [betbot.constants :as constants]
             [betbot.layout :as layout]))
 
+(defn get-all [] get-all)
+
+(defn create-event [{event :body}]
+  (let [new-event (events/create event)]
+    {:status 200
+     :body { :id new-event }}))
+
+(defn get-event [id]
+   ;; go to db and get one event
+  )
+
+(defn update-event [id]
+   ;; go to db and update event
+  )
+
+(defn delete-event [id]
+   ;; go to db and delete event
+  )
 
 (defroutes routes
-  (GET "/"      [] layout/reagent-page)
+  (GET "/" [] layout/reagent-page)
 
   (context "/api" []
-    (GET "/ping" [] {:status 200 :body "pong"}))
+    (GET "/events" [] get-all)
+    (POST "/events" []  create-event)
+
+    (context "/:id" [id]
+      (GET "/" [] get-event)
+      (PUT "/" [] update-event)
+      (DELETE "/" [] delete-event))
+
+    (GET "/ping" [] {:status 200 :body "howdy"}))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))

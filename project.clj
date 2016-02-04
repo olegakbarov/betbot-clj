@@ -1,6 +1,6 @@
 (defproject betbot "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Cluster of microservices orchestrated by Kubernetis based on Paxos"
+  :url "http://betbot.io/"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -21,6 +21,11 @@
                  [environ "1.0.1"]                          ; config from env
                  [cheshire "5.5.0"]                         ; json parsing/generation
                  [clj-http "2.0.0"]                         ; http client for backend
+
+                 ;; Database
+                 [korma "0.4.2"]
+                 [ragtime "0.5.2"]
+                 [org.postgresql/postgresql "9.4-1201-jdbc41"]
 
                  ;; Frontend
                  [reagent "0.5.1"]                          ; React rendering wrapper
@@ -87,7 +92,10 @@
                               :ring-handler betbot.handler/app}
 
                    :env {:dev true
-                         :host "http://localhost:3449"}}
+                         :host "http://localhost:3449"
+                         :betbot-db "betbot_dev"
+                         :betbot-db-user "betbot"
+                         :betbot-db-pass "yolo"}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :prep-tasks [["less" "once"]
