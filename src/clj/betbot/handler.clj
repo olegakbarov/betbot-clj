@@ -18,6 +18,8 @@
   {:status 200
    :body {:results (events/find-all)}})
 
+;; TODO this retuns <h1>Invalid anti-forgery token</h1>
+;; Dunno how to fix
 (defn create-event [{event :body}]
   (let [new-event (events/create event)]
     {:status 200
