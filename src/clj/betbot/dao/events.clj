@@ -2,13 +2,28 @@
   "Describes how to operate with event objects"
   (:require [betbot.dao.models :as m]
             [clj-time.core :as t]
-            [korma.core :as k]))
+            [clj-time.format :as f]
+            [clj-time.coerce :refer [to-sql-time]]
+            [korma.core :as k]
+            [taoensso.timbre :as log]))
+
+(def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
 (defn create
   "Creates event in database"
   [event-param]
-  (let [event (into event-param {:created_at (t/now)
-                                 :updated_at (t/now)})
+  (log/debug "Incomming event: " event-param)
+  (let [event-gen {:created_at (k/sqlfn now)
+                   :updated_at (k/sqlfn now)
+                   :starts_at (->> event-param
+                                   :starts_at
+                                   (f/parse iso-8601)
+                                   (to-sql-time))
+                   :ends_at (->> event-param
+                                 :ends_at
+                                 (f/parse iso-8601)
+                                 (to-sql-time))}
+        event (into event-param event-gen)
         result (k/insert m/events
                  (k/values event))]
     {:status 200
@@ -25,7 +40,7 @@
       {:status 200
        :body (peek result)})))
 
-(defn update
+(defn replace
   "go to db and update event"
   [id event]
   {:status 200

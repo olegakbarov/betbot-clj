@@ -5,7 +5,7 @@
             [compojure.route :refer [not-found resources]]
 
             [ring.util.response :refer [redirect]]
-            [ring.middleware.defaults :refer [api-defaults wrap-defaults]]
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [prone.middleware :refer [wrap-exceptions]]
@@ -22,7 +22,7 @@
 
     (context "/:id" [id]
       (GET "/" [] (events/find-one id))
-      (PUT "/" {event :body} (events/update id event))
+      (PUT "/" {event :body} (events/replace id event))
       (DELETE "/" [] (events/delete id))))
 
   ; catch-all handler to allow client-side routing
@@ -33,10 +33,11 @@
   ;; the server is forced to re-resolve the symbol in the var
   ;; rather than having its own copy. When the root binding
   ;; changes, the server picks it up without having to restart.
-  (let [handler (-> #'routes
+  (let [defaults (assoc-in site-defaults [:security :anti-forgery] false)
+        handler (-> #'routes
                     (wrap-json-response)
                     (wrap-json-body {:keywords? true :bigdecimals? true})
-                    (wrap-defaults api-defaults))]
+                    (wrap-defaults defaults))]
     (if (env :dev)
       (-> handler
           wrap-exceptions

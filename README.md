@@ -21,6 +21,14 @@ To deploy to Heroku:
 
 ### Datbase
 
+For local development configure your DB with following script:
+
+```sql
+CREATE DATABASE betbot;
+CREATE USER betbot WITH password 'yolo';
+GRANT ALL privileges ON DATABASE betbot TO betbot;
+```
+
 *Events table*
 
 | title | starts_at | ends_at | category | subcategory | created_at | updated_at|
@@ -28,7 +36,16 @@ To deploy to Heroku:
 `events` table created with:
 
 ```sql
-create table events (id integer primary key default nextval('event_ids'), title varchar(64), starts_at timestamptz, ends_at timestamptz, category varchar(64), subcategory varchar(64), created_at timestamptz, updated_at timestamptz);
+CREATE table events (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL, 
+  starts_at TIMESTAMPTZ NOT NULL,
+  ends_at TIMESTAMPTZ NOT NULL,
+  category TEXT,
+  subcategory TEXT,
+  created_at TIMESTAMPT WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMPT WITH TIME ZONE NOT NULL
+  );
 ```
 
 ## `Wiki:`

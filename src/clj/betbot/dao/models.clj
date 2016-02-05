@@ -7,8 +7,8 @@
 (defdb db (postgres {:db (env :betbot-db)
                      :user (env :betbot-db-user)
                      :password (env :betbot-db-pass)
-                     :host (env :betbot-db-host)
-                     :port (env :betbot-db-port)}))
+                     :host (env :betbot-db-host "localhost")
+                     :port (Integer/parseInt (env :betbot-db-port "5432"))}))
 
 (declare users events bets)
 
