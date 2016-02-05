@@ -4,7 +4,7 @@
             [compojure.route :refer [not-found resources]]
 
             [ring.util.response :refer [redirect]]
-            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+            [ring.middleware.defaults :refer [api-defaults wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.json :refer [wrap-json-response]]
             [prone.middleware :refer [wrap-exceptions]]
@@ -47,9 +47,7 @@
     (context "/:id" [id]
       (GET "/" [] get-event)
       (PUT "/" [] update-event)
-      (DELETE "/" [] delete-event))
-
-    (GET "/ping" [] {:status 200 :body "howdy"}))
+      (DELETE "/" [] delete-event)))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))
@@ -61,7 +59,7 @@
   ;; changes, the server picks it up without having to restart.
   (let [handler (-> #'routes
                     (wrap-json-response)
-                    (wrap-defaults site-defaults))]
+                    (wrap-defaults api-defaults))]
     (if (env :dev)
       (-> handler
           wrap-exceptions
