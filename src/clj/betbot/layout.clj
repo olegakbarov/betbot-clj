@@ -1,4 +1,5 @@
 (ns betbot.layout
+  "Layouts for server-side rendered pages"
   (:require [environ.core :refer [env]]
             [hiccup.core :refer [html]]
             [hiccup.page :refer [include-js include-css]]

@@ -21,6 +21,7 @@
                  [environ "1.0.1"]                          ; config from env
                  [cheshire "5.5.0"]                         ; json parsing/generation
                  [clj-http "2.0.0"]                         ; http client for backend
+                 [clj-time "0.11.0"]                        ; Time manipulation
 
                  ;; Database
                  [korma "0.4.2"]
