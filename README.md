@@ -36,34 +36,25 @@ create table events (id integer primary key default nextval('event_ids'), title 
 ##### Events API
 
 1. Store `events` in db
-
-2. Possibly store today's `events` in redis (hi-availablity, lol)
-
-3. Provide CRUD on `events`
+1. Provide CRUD on `events`
+1. Possibly store today's `events` in redis (hi-availablity, lol)
 
 ##### Bet API + engine
 
 1. Store `bets` in db
-
-2. Provide CRUD on bets
-
-3. Possibly store ending today `bets` in redis
-
-4. Handle *happened* events — update state and initalize push to users
+1. Provide CRUD on bets
+1. Possibly store ending today `bets` in redis
+1. Handle *happened* events — update state and initalize push to users
 
 ##### Bot
 
 1. Provide available categories and events to user (via command)
-
-2. Take bets on event
-
-3. Inform about result after event has happened
-
-4. Provide mechanism to create custom bets
+1. Take bets on event
+1. Inform about result after event has happened
+1. Provide mechanism to create custom bets
 
 ##### Scraper
 
 1. Scrape 3rth party API's every *some* time and fetch data about upcoming events
-
-2. Compare new data with existing and update if needed
+1. Compare new data with existing and update if needed
 

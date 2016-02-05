@@ -1,4 +1,5 @@
 (ns betbot.handler
+  "Root handler for HTTP server"
   (:require [environ.core :refer [env]]
             [compojure.core :refer [GET POST PUT DELETE defroutes context]]
             [compojure.route :refer [not-found resources]]
@@ -6,48 +7,23 @@
             [ring.util.response :refer [redirect]]
             [ring.middleware.defaults :refer [api-defaults wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [prone.middleware :refer [wrap-exceptions]]
 
-            [betbot.models.events :as events]
-
-            [betbot.constants :as constants]
+            [betbot.dao.events :as events]
             [betbot.layout :as layout]))
-
-(defn get-all [_]
-  {:status 200
-   :body {:results (events/find-all)}})
-
-;; TODO this retuns <h1>Invalid anti-forgery token</h1>
-;; Dunno how to fix
-(defn create-event [{event :body}]
-  (let [new-event (events/create event)]
-    {:status 200
-     :body { :id new-event }}))
-
-(defn get-event [id]
-   ;; go to db and get one event
-  )
-
-(defn update-event [id]
-   ;; go to db and update event
-  )
-
-(defn delete-event [id]
-   ;; go to db and delete event
-  )
 
 (defroutes routes
   (GET "/" [] layout/reagent-page)
 
   (context "/api" []
-    (GET "/events" [] get-all)
-    (POST "/events" []  create-event)
+    (GET "/events" {query :params} (events/search query))
+    (POST "/events" {event-param :body} (events/create event-param))
 
     (context "/:id" [id]
-      (GET "/" [] get-event)
-      (PUT "/" [] update-event)
-      (DELETE "/" [] delete-event)))
+      (GET "/" [] (events/find-one id))
+      (PUT "/" {event :body} (events/update id event))
+      (DELETE "/" [] (events/delete id))))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))
@@ -59,6 +35,7 @@
   ;; changes, the server picks it up without having to restart.
   (let [handler (-> #'routes
                     (wrap-json-response)
+                    (wrap-json-body {:keywords? true :bigdecimals? true})
                     (wrap-defaults api-defaults))]
     (if (env :dev)
       (-> handler

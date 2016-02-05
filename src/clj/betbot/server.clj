@@ -1,4 +1,5 @@
 (ns betbot.server
+  "Responsible for starting application from command line"
   (:require [taoensso.timbre :as log]
             [ring.adapter.jetty :refer [run-jetty]]
             [environ.core :refer [env]]
