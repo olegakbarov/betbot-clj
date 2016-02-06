@@ -33,11 +33,15 @@
       {:status 200
        :body (peek result)})))
 
-(defn replace
+;; TODO: add validation that will allow only fields from whitelist to be updated
+(defn update-one
   "go to db and update event"
   [id event]
-  {:status 200
-   :body "Not implemented yet"})
+  (let [result (k/update m/events
+                 (k/set-fields event)
+                 (k/where {:id (Integer/parseInt id)}))]
+    {:status 200
+     :body {:updated result}}))
 
 (defn delete
   "go to db and delete event"
