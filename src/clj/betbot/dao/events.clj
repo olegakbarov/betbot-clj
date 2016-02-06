@@ -36,9 +36,11 @@
 ;; TODO: add validation that will allow only fields from whitelist to be updated
 (defn update-one
   "go to db and update event"
-  [id event]
+  [id {:keys [starts_at ends_at] :as event}]
   (let [result (k/update m/events
-                 (k/set-fields event)
+                 (k/set-fields (merge event {:updated_at (t/now)
+                                             :starts_at  (f/parse iso-8601 starts_at)
+                                             :ends_at    (f/parse iso-8601 ends_at)}))
                  (k/where {:id (Integer/parseInt id)}))]
     {:status 200
      :body {:updated result}}))
