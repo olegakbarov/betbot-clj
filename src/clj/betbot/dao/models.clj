@@ -3,13 +3,10 @@
   (:require [environ.core :refer [env]]
             [clj-time.jdbc]
             [korma.db :refer [defdb postgres]]
-            [korma.core :refer [defentity pk table has-many has-one entity-fields]]))
+            [korma.core :refer [defentity pk table has-many has-one entity-fields]]
+            [betbot.util.db :as db-util]))
 
-(defdb db (postgres {:db (env :betbot-db)
-                     :user (env :betbot-db-user)
-                     :password (env :betbot-db-pass)
-                     :host (env :betbot-db-host "localhost")
-                     :port (Integer/parseInt (env :betbot-db-port "5432"))}))
+(defdb db (db-util/korma-connection-map (env :database-url)))
 
 (declare users events bets)
 

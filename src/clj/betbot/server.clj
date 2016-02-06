@@ -7,7 +7,7 @@
             [betbot.handler :refer [app]])
   (:gen-class))
 
-(def required-keys [])
+(def required-keys [:database-url])
 
 (def port (Integer/parseInt (env :port "3000")))
 
