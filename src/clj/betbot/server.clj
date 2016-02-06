@@ -4,10 +4,12 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [environ.core :refer [env]]
 
-            [betbot.handler :refer [app]])
+            [betbot.handler :refer [app]]
+
+            [betbot.util.db :as db-util])
   (:gen-class))
 
-(def required-keys [])
+(def required-keys [:database-url])
 
 (def port (Integer/parseInt (env :port "3000")))
 
@@ -20,4 +22,6 @@
 
 (defn -main [& args]
   (require-env! required-keys)
+  (log/debug "Database env parameter:" (env :database-url))
+  (log/debug "Converted to Korma:" (db-util/korma-connection-map (env :database-url)))
   (run-jetty app {:port port :join? false}))

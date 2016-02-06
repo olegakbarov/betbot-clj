@@ -93,10 +93,7 @@
                               :ring-handler betbot.handler/app}
 
                    :env {:dev true
-                         :host "http://localhost:3449"
-                         :betbot-db "betbot"
-                         :betbot-db-user "betbot"
-                         :betbot-db-pass "yolo"}}
+                         :database-url "postgres://betbot:yolo@localhost:5432/betbot"}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :prep-tasks [["less" "once"]
