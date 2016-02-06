@@ -10,6 +10,7 @@
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [prone.middleware :refer [wrap-exceptions]]
 
+            [betbot.util.clj-time-cheshire]                 ; adds support for DateTime serialization
             [betbot.dao.events :as events]
             [betbot.layout :as layout]))
 

@@ -1,6 +1,7 @@
 (ns betbot.dao.models
   "Describes all DB entities and their relations"
   (:require [environ.core :refer [env]]
+            [clj-time.jdbc]
             [korma.db :refer [defdb postgres]]
             [korma.core :refer [defentity pk table has-many has-one entity-fields]]))
 
