@@ -11,23 +11,16 @@
 
 (defn create
   "Creates event in database"
-  [event-param]
+  [{:keys [starts_at ends_at] :as event-param}]
   (log/debug "Incomming event: " event-param)
-  (let [event-gen {:created_at (k/sqlfn now)
-                   :updated_at (k/sqlfn now)
-                   :starts_at (->> event-param
-                                   :starts_at
-                                   (f/parse iso-8601)
-                                   (to-sql-time))
-                   :ends_at (->> event-param
-                                 :ends_at
-                                 (f/parse iso-8601)
-                                 (to-sql-time))}
+  (let [event-gen {:created_at (t/now)
+                   :updated_at (t/now)
+                   :starts_at  (f/parse iso-8601 starts_at)
+                   :ends_at    (f/parse iso-8601 ends_at)}
         event (into event-param event-gen)
-        result (k/insert m/events
-                 (k/values event))]
+        result (k/insert m/events (k/values event))]
     {:status 200
-     :result result}))
+     :body result}))
 
 (defn find-one
   "go to db and get one event"
