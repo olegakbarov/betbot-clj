@@ -18,13 +18,14 @@
   (GET "/" [] layout/reagent-page)
 
   (context "/api" []
-    (GET "/events" {query :params} (events/search query))
-    (POST "/events" {event-param :body} (events/create event-param))
+    (context "/events" []
+      (GET "/" {query :params} (events/search query))
+      (POST "/" {event-param :body} (events/create event-param))
 
-    (context "/:id" [id]
-      (GET "/" [] (events/find-one id))
-      (PUT "/" {event :body} (events/replace id event))
-      (DELETE "/" [] (events/delete id))))
+      (context "/:id" [id]
+        (GET "/" [] (events/find-one id))
+        (PUT "/" {event :body} (events/update-one id event))
+        (DELETE "/" [] (events/delete id)))))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))
