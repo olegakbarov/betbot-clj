@@ -22,6 +22,4 @@
 
 (defn -main [& args]
   (require-env! required-keys)
-  (log/debug "Database env parameter:" (env :database-url))
-  (log/debug "Converted to Korma:" (db-util/korma-connection-map (env :database-url)))
   (run-jetty app {:port port :join? false}))
