@@ -12,12 +12,15 @@
 
             [betbot.util.clj-time-cheshire]                 ; adds support for DateTime serialization
             [betbot.dao.events :as events]
-            [betbot.layout :as layout]))
+            [betbot.layout :as layout]
+            [betbot.telegram.logic :as telegram-logic]))
 
 (defroutes routes
   (GET "/" [] layout/reagent-page)
 
   (context "/api" []
+    (POST "/telegram/:token/" {update :body} (telegram-logic/update-handler update))
+
     (context "/events" []
       (GET "/" {query :params} (events/search query))
       (POST "/" {event-param :body} (events/create event-param))

@@ -8,6 +8,7 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
+                 [org.clojure/core.async "0.2.374"]
                  [com.taoensso/timbre "4.1.4"]              ; Clojure/Script logging
 
                  [ring "1.4.0"]
@@ -44,7 +45,8 @@
   :main betbot.server
   :uberjar-name "betbot.jar"
   :ring {:handler betbot.handler/app
-         :uberwar-name "betbot.war"}
+         :init betbot.telegram.polling/start!
+         :destroy betbot.telegram.polling/stop!}
 
   :clean-targets ^{:protect false} [:target-path
                                     [:cljsbuild :builds :app :compiler :output-dir]
@@ -66,9 +68,7 @@
   :less {:source-paths ["src/less"]
          :target-path "resources/public/css"}
 
-  :profiles {:dev {:repl-options {:init-ns betbot.repl}
-
-                   :dependencies [[ring/ring-mock "0.3.0"]
+  :profiles {:dev {:dependencies [[ring/ring-mock "0.3.0"]
                                   [ring/ring-devel "1.4.0"]
                                   [lein-figwheel "0.5.0-2"]
                                   [org.clojure/clojurescript "1.7.170"]
@@ -93,7 +93,9 @@
                               :ring-handler betbot.handler/app}
 
                    :env {:dev true
-                         :database-url "postgres://betbot:yolo@localhost:5432/betbot"}}
+                         :host "http://localhost:3000"
+                         :database-url "postgres://betbot:yolo@localhost:5432/betbot"
+                         :telegram-token "192904624:AAH9llLQt2DXMVFKtLGg1L5hCqzg9CvM53o"}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :prep-tasks [["less" "once"]

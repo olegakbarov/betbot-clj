@@ -5,11 +5,13 @@
             [environ.core :refer [env]]
 
             [betbot.handler :refer [app]]
-
-            [betbot.util.db :as db-util])
+            [betbot.telegram.polling :as telegram-polling]
+            [betbot.telegram.api :as telegram-api])
   (:gen-class))
 
-(def required-keys [:database-url])
+(def required-keys [:host
+                    :database-url
+                    :telegram-token])
 
 (def port (Integer/parseInt (env :port "3000")))
 
@@ -22,6 +24,7 @@
 
 (defn -main [& args]
   (require-env! required-keys)
-  (log/debug "Database env parameter:" (env :database-url))
-  (log/debug "Converted to Korma:" (db-util/korma-connection-map (env :database-url)))
+  (if (env :dev)
+    (telegram-polling/start!)
+    (telegram-api/set-webhook (str (env :host) "/api/telegram/" (env :telegram-token))))
   (run-jetty app {:port port :join? false}))
