@@ -48,8 +48,15 @@
 (defn delete
   "go to db and delete event"
   [id]
-  {:status 200
-   :body "Not implemented yet"})
+  (log/debug "Deleting the event with id: " id)
+  (let [result (k/delete m/events
+                 (k/where {:id (Integer/parseInt id)}))]
+    ;; k/delete returns number of deleted items
+    (if (= 0 result)
+      {:status 404
+       :body (str "Event with id " id " haven't been found.")}
+      {:status 200
+       :body (str "Event with " id " has been deleted.")})))
 
 (defn- query->criteria
   "Transforms ring string-based query to criteria object"
