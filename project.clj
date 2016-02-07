@@ -45,7 +45,7 @@
   :main betbot.server
   :uberjar-name "betbot.jar"
   :ring {:handler betbot.handler/app
-         :init betbot.telegram.polling/start!
+         :init betbot.server/start-telegram
          :destroy betbot.telegram.polling/stop!}
 
   :clean-targets ^{:protect false} [:target-path

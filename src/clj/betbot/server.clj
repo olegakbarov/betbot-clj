@@ -5,8 +5,8 @@
             [environ.core :refer [env]]
 
             [betbot.handler :refer [app]]
-
-            [betbot.util.db :as db-util])
+            [betbot.telegram.polling :as telegram-polling]
+            [betbot.telegram.logic :as telegram-logic])
   (:gen-class))
 
 (def required-keys [:database-url])
@@ -19,6 +19,10 @@
     (when (seq missing)
       (doseq [var missing] (log/error "Variable" var "was not provided"))
       (System/exit 0))))
+
+(defn start-telegram []
+  ;; TODO: if (env :dev) start polling, otherwise subscribe to updates
+  (telegram-polling/start! telegram-logic/callback))
 
 (defn -main [& args]
   (require-env! required-keys)
