@@ -4,7 +4,7 @@
             [cheshire.core :as json]
             [betbot.telegram.api :as api]))
 
-(defn callback [update]
+(defn update-handler [update]
   (log/debug "Got update from bot:\n"
              (json/generate-string update {:pretty true}))
   (let [chat (-> update :message :chat)

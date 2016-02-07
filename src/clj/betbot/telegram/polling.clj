@@ -1,7 +1,8 @@
 (ns betbot.telegram.polling
   "Declares ways co communicate with Telegram Bot API"
   (:require [clojure.core.async :as a :refer [>!! <! go chan close! thread]]
-            [betbot.telegram.api :as api]))
+            [betbot.telegram.api :as api]
+            [betbot.telegram.logic :refer [update-handler]]))
 
 ;; this holds messages from Telegram
 (def message-chan (atom nil))
@@ -11,7 +12,7 @@
 
 (defn start!
   "Starts long-polling process"
-  [update-handler]
+  []
   (reset! message-chan (a/chan))
   (reset! running true)
 

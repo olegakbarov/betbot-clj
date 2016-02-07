@@ -17,6 +17,14 @@
         resp (http/get url {:as :json :query-params query})]
     (-> resp :body :result)))
 
+(defn set-webhook
+  "Register WebHook to receive updates from chats"
+  [webhook-url]
+  (let [url   (str base-url token "/setWebhook")
+        query {:url webhook-url}
+        resp  (http/get url {:as :json :query-params query})]
+    (log/debug "Registering WebHook, Telegram returned:" (:body resp))))
+
 (defn send-message
   "Sends message to user"
   [chat-id text]

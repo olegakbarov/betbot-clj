@@ -6,10 +6,12 @@
 
             [betbot.handler :refer [app]]
             [betbot.telegram.polling :as telegram-polling]
-            [betbot.telegram.logic :as telegram-logic])
+            [betbot.telegram.api :as telegram-api])
   (:gen-class))
 
-(def required-keys [:database-url])
+(def required-keys [:host
+                    :database-url
+                    :telegram-token])
 
 (def port (Integer/parseInt (env :port "3000")))
 
@@ -20,10 +22,9 @@
       (doseq [var missing] (log/error "Variable" var "was not provided"))
       (System/exit 0))))
 
-(defn start-telegram []
-  ;; TODO: if (env :dev) start polling, otherwise subscribe to updates
-  (telegram-polling/start! telegram-logic/callback))
-
 (defn -main [& args]
   (require-env! required-keys)
+  (if (env :dev)
+    (telegram-polling/start!)
+    (telegram-api/set-webhook (str (env :host) "/api/telegram/" (env :telegram-token))))
   (run-jetty app {:port port :join? false}))

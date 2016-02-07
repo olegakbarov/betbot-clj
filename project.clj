@@ -45,7 +45,7 @@
   :main betbot.server
   :uberjar-name "betbot.jar"
   :ring {:handler betbot.handler/app
-         :init betbot.server/start-telegram
+         :init betbot.telegram.polling/start!
          :destroy betbot.telegram.polling/stop!}
 
   :clean-targets ^{:protect false} [:target-path
@@ -93,6 +93,7 @@
                               :ring-handler betbot.handler/app}
 
                    :env {:dev true
+                         :host "http://localhost:3000"
                          :database-url "postgres://betbot:yolo@localhost:5432/betbot"
                          :telegram-token "192904624:AAH9llLQt2DXMVFKtLGg1L5hCqzg9CvM53o"}}
 
