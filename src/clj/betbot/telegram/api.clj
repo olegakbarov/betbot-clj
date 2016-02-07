@@ -16,3 +16,13 @@
                :limit   (or limit 100)}
         resp (http/get url {:as :json :query-params query})]
     (-> resp :body :result)))
+
+(defn send-message
+  "Sends message to user"
+  [chat-id text]
+  (log/debug "Sending message")
+  (let [url (str base-url token "/sendMessage")
+        query {:chat_id chat-id
+               :text text}
+        resp (http/get url {:as :json :query-params query})]
+    (log/debug "Got response from server" (:body resp))))
