@@ -43,7 +43,7 @@
                                            :ends_at (t/plus (f/parse iso-8601 (get scores "DateTime")) (t/hours 2))
                                            :category "Sport"
                                            :subcategory "Soccer"}) scores))]
-        (log/debug result))) ;; from this point ready to save in DB
+        (log/debug result))) ;; from this point we're ready to save to DB
 
 ;; ad-hoc (because of timestamps)
 (defn get-data
@@ -68,7 +68,7 @@
       (get-data timestamp)
       (log/error ("Wrong timestamp! — " timestamp)))))
 
-;; config of cronj task
+;; config of cronj task (every 2 seconds)
 (def task
   {:id "get FA Premiership data"
    :handler get-timestamp
