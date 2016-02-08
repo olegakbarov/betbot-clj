@@ -14,12 +14,13 @@
 
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
-;; fa premiership
+;; ad-hoc
 (def root-url "http://live.premierleague.com/syndicationdata")
 (def id 8)
 (def season 2015)
 (def week 25)
 
+;; ad-hoc
 (defn url-constructor
   "Creates a url either with timestamp param or gets the timestamp"
   [id season week timestamp]
@@ -32,13 +33,7 @@
       "/sentinel.json"
       (str "/scores.json?" timestamp))))
 
-(defn flatten-result
-  "Flatten the result to one-dimension vector"
-  [data]
-  (let [res []]
-    (reduce (into #(-> (get "HomeTea")) res))
-    data))
-
+;; ad-hoc
 (defn process-results
   "Processes and stores the the resluts to db"
   [data]
@@ -48,8 +43,9 @@
                                            :ends_at (t/plus (f/parse iso-8601 (get scores "DateTime")) (t/hours 2))
                                            :category "Sport"
                                            :subcategory "Soccer"}) scores))]
-        (log/debug result)))
+        (log/debug result))) ;; from this point ready to save in DB
 
+;; ad-hoc (because of timestamps)
 (defn get-data
   [timestamp]
   (log/debug "Get actual data with the timestamp: " timestamp)
@@ -58,10 +54,7 @@
                        :body
                        parse-string
                        (get "Data"))]
-    ; (log/debug "this is response from API" data)
     (process-results data)))
-
-  ; :starts_at (#(-> scores (get "DateTime")))
 
 (defn get-timestamp
   [t opts]
@@ -77,7 +70,7 @@
 
 ;; config of cronj task
 (def task
-  {:id "get-timestamp"
+  {:id "get FA Premiership data"
    :handler get-timestamp
    :schedule "/2 * * * * * *"
    :opts {:name "fa premiership"}})
