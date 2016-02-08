@@ -29,6 +29,9 @@
                  [ragtime "0.5.2"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
 
+                 ;; Misc
+                 [im.chit/cronj "1.4.4"]
+
                  ;; Frontend
                  [reagent "0.5.1"]                          ; React rendering wrapper
                  [re-frame "0.6.0"]                         ; data-flow library
