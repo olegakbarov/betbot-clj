@@ -35,14 +35,30 @@
 
 ;; ad-hoc
 (defn process-results
-  "Processes and stores the the resluts to db"
+  "Processes received date"
   [data]
   (let [scores (into [] (flatten (map #(get % "Scores") data)))
-        result (into [] (map (fn [scores] {:title (str (-> scores (get "HomeTeam")(get "Name")) " vs " (-> scores (get "AwayTeam") (get "Name")))
-                                           :starts_at (get scores "DateTime")
-                                           :ends_at (t/plus (f/parse iso-8601 (get scores "DateTime")) (t/hours 2))
-                                           :category "Sport"
-                                           :subcategory "Soccer"}) scores))]
+        result (into [] (map (fn [scores]
+          (let [title (str (-> scores (get "HomeTeam")(get "Name")) " vs " (-> scores (get "AwayTeam") (get "Name")))
+                starts_at (get scores "DateTime")
+                ends_at (t/plus (f/parse iso-8601 (get scores "DateTime")) (t/hours 2))
+                hometeam (-> scores (get "HomeTeam")(get "Name"))
+                awayteam (-> scores (get "AwayTeam")(get "Name"))
+                hometeam-score (-> scores (get "HomeTeam")(get "Score"))
+                awayteam-score (-> scores (get "AwayTeam")(get "Score"))]
+               {:title title
+                :starts_at starts_at
+                :ends_at ends_at
+                :hometeam hometeam
+                :awayteam awayteam
+                :subcategory "Soccer"
+                :category "Sport"
+                ;=== there're no such fields in DB yet (but i guess we need them)
+                :status (if (t/before? (t/now) (f/parse iso-8601 starts_at)) "Match scheduled" "Match is over")
+                :result_str (str hometeam " " hometeam-score":" awayteam-score" " awayteam)
+                ;=== outcome returns 1 if hometeam won, 2 if awayteam won and 0 if deuce — handy for betting logic
+                :outcome (if (= hometeam-score awayteam-score) 0 (if (> hometeam-score awayteam-score) 1 2))
+                })) scores))]
         (log/debug result))) ;; from this point we're ready to save to DB
 
 ;; ad-hoc (because of timestamps)
