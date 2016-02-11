@@ -10,7 +10,8 @@
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
 (defn serialize [m sep] (apply str (concat (interpose sep (vals m)))))
-(defn keys->str [m] (clojure.string/replace (clojure.string/join "," (keys m)) #":" ""))
+(defn wrap-in-parens [item] (str \" item \"))
+(defn keys->str [m] (clojure.string/replace (map wrap-in-parens (clojure.string/join ", " (keys m))) #":" ""))
 
 (defn upsert
   "Creates event only in event with this title+starts_at combo do not exists"
@@ -25,8 +26,10 @@
                     "INSERT INTO events ("
                     (keys->str res)
                     ") VALUES ("
-                    (serialize (merge res) ",")
-                    ") ON CONFLICT (starts_at) DO UPDATE SET starts_at = EXCLUDED.starts_at;"))]
+                    (serialize (merge res) ", ")
+                    ");"
+                    ; ") ON CONFLICT (events_title_start) DO NOTHING;"
+                    ))]
     (if (empty? result)
       (log/debug "empty result")
       (log/debug result))))

@@ -43,7 +43,7 @@
     (try
       (events/upsert event)
     (catch Exception e
-      (log/warn "Was trying to save duplicate, but we are fine", e))
+      (log/warn "Was trying to save duplicate, but we are fine", (.getNextException e)))
     (catch Exception e
       (log/error "Ouch, save failed")))))
 
