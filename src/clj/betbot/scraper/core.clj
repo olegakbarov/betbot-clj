@@ -5,11 +5,14 @@
             [clojure.data.json :as json]
             [cheshire.core :refer :all]
             [taoensso.timbre :as log]
+
             [betbot.dao.models :as m]
+            [betbot.dao.events :as events]
+            [korma.core :as k]
+
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.coerce :refer [to-sql-time]]
-            [korma.core :as k]
             [cronj.core :refer :all]))
 
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
@@ -33,6 +36,17 @@
       "/sentinel.json"
       (str "/scores.json?" timestamp))))
 
+(defn store-results
+  "Check if event is already in DB and if not — store it"
+  [events]
+  (doseq [event events]
+    (try
+      (events/upsert event)
+    (catch Exception e
+      (log/warn "Was trying to save duplicate, but we are fine", e))
+    (catch Exception e
+      (log/error "Ouch, save failed")))))
+
 ;; ad-hoc
 (defn process-results
   "Processes received date"
@@ -49,27 +63,24 @@
                {:title title
                 :starts_at starts_at
                 :ends_at ends_at
-                :hometeam hometeam
-                :awayteam awayteam
                 :subcategory "Soccer"
                 :category "Sport"
-                ;=== there're no such fields in DB yet (but i guess we need them)
-                :status (if (t/before? (t/now) (f/parse iso-8601 starts_at)) "Match scheduled" "Match is over")
+                :status (if (t/before? (t/now) (f/parse iso-8601 starts_at)) "Match is scheduled" "Match is over")
                 :result_str (str hometeam " " hometeam-score":" awayteam-score" " awayteam)
-                ;=== outcome returns 1 if hometeam won, 2 if awayteam won and 0 if deuce — handy for betting logic
+                ;; outcome returns 1 if hometeam won, 2 if awayteam won and 0 if deuce — handy for betting logic
                 :outcome (if (= hometeam-score awayteam-score) 0 (if (> hometeam-score awayteam-score) 1 2))
                 })) scores))]
-        (log/debug result))) ;; from this point we're ready to save to DB
+        (store-results result)))
 
 ;; ad-hoc (because of timestamps)
 (defn get-data
   [timestamp]
   (log/debug "Get actual data with the timestamp: " timestamp)
   (let [data (-> (url-constructor id season week timestamp)
-                       http/get
-                       :body
-                       parse-string
-                       (get "Data"))]
+                  http/get
+                  :body
+                  parse-string
+                  (get "Data"))]
     (process-results data)))
 
 (defn get-timestamp

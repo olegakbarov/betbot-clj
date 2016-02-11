@@ -26,6 +26,9 @@
     :ends_at
     :category
     :subcategory
+    :status
+    :result_str
+    :outcome
     :created_at
     :updated_at))
 

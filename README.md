@@ -38,14 +38,16 @@ GRANT ALL privileges ON DATABASE betbot TO betbot;
 ```sql
 CREATE table events (
   id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL, 
+  title TEXT NOT NULL,
   starts_at TIMESTAMPTZ NOT NULL,
   ends_at TIMESTAMPTZ NOT NULL,
   category TEXT,
   subcategory TEXT,
-  created_at TIMESTAMPT WITH TIME ZONE NOT NULL,
-  updated_at TIMESTAMPT WITH TIME ZONE NOT NULL
+  created_at TIMESTAMPTZ WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMPTZ WITH TIME ZONE NOT NULL
   );
+
+CREATE UNIQUE INDEX events_title_start ON events USING btree (title, starts_at);
 ```
 
 ## `Wiki:`
@@ -75,3 +77,8 @@ CREATE table events (
 1. Scrape 3rth party API's every *some* time and fetch data about upcoming events
 1. Compare new data with existing and update if needed
 
+
+
+### Some useful sports data notes
+
+- MLB 2016 season is (April 3, 2016 – October 2, 2016)
