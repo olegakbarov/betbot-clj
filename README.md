@@ -31,7 +31,18 @@ GRANT ALL privileges ON DATABASE betbot TO betbot;
 
 *Events table*
 
-| title | starts_at | ends_at | category | subcategory | created_at | updated_at|
+```
+title
+result_str — String with user-friendly result of event;
+outcome — CODE for result — 0 for deuce, 1 = hometeam won, 2 awayteam won;
+status — enum ["Match is scheduled" "Match is over"]
+starts_at
+ends_at
+category
+subcategory
+created_at
+updated_at|
+```
 
 `events` table created with:
 
@@ -41,11 +52,14 @@ CREATE table events (
   title TEXT NOT NULL,
   starts_at TIMESTAMPTZ NOT NULL,
   ends_at TIMESTAMPTZ NOT NULL,
+  status TEXT,
   category TEXT,
+  outcome varchar(99),
   subcategory TEXT,
-  created_at TIMESTAMPTZ WITH TIME ZONE NOT NULL,
-  updated_at TIMESTAMPTZ WITH TIME ZONE NOT NULL
-  );
+  result_str TEXT,
+  updated_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
 
 CREATE UNIQUE INDEX events_title_start ON events USING btree (title, starts_at);
 ```
@@ -54,28 +68,28 @@ CREATE UNIQUE INDEX events_title_start ON events USING btree (title, starts_at);
 
 ##### Events API
 
-1. Store `events` in db
-1. Provide CRUD on `events`
-1. Possibly store today's `events` in redis (hi-availablity, lol)
+- [x] Store `events` in db
+- [x] Provide CRUD on `events`
+- [ ] Possibly store today's `events` in redis (hi-availablity, lol)
 
 ##### Bet API + engine
 
-1. Store `bets` in db
-1. Provide CRUD on bets
-1. Possibly store ending today `bets` in redis
-1. Handle *happened* events — update state and initalize push to users
+- [ ] Store `bets` in db
+- [ ] Provide CRUD on bets
+- [ ] Possibly store ending today `bets` in redis
+- [ ] Handle *happened* events — update state and initalize push to users
 
 ##### Bot
 
-1. Provide available categories and events to user (via command)
-1. Take bets on event
-1. Inform about result after event has happened
-1. Provide mechanism to create custom bets
+- [ ] Provide available categories and events to user (via command)
+- [ ] Take bets on event
+- [ ] Inform about result after event has happened
+- [ ] Provide mechanism to create custom bets
 
 ##### Scraper
 
-1. Scrape 3rth party API's every *some* time and fetch data about upcoming events
-1. Compare new data with existing and update if needed
+- [x] Scrape 3rth party API's every *some* time and fetch data about upcoming events
+- [x] Compare new data with existing and update if needed
 
 
 

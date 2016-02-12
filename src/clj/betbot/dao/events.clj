@@ -5,13 +5,14 @@
             [clj-time.format :as f]
             [clj-time.coerce :refer [to-sql-time]]
             [korma.core :as k]
+            [clojure.java.jdbc :as j]
             [taoensso.timbre :as log]))
 
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
-(defn serialize [m sep] (apply str (concat (interpose sep (vals m)))))
-(defn wrap-in-parens [item] (str \" item \"))
-(defn keys->str [m] (clojure.string/replace (map wrap-in-parens (clojure.string/join ", " (keys m))) #":" ""))
+(defn wrap-in-parens [item] (str \' item \'))
+(defn serialize [m sep] (apply str (concat (interpose sep (map wrap-in-parens (vals m))))))
+(defn keys->str [m] (clojure.string/replace (clojure.string/join ", " (keys m)) #":" ""))
 
 (defn upsert
   "Creates event only in event with this title+starts_at combo do not exists"
@@ -21,18 +22,14 @@
                    :ends_at ends_at ;; :ends_at already formatted in core/process-results
                    :starts_at (f/parse iso-8601 starts_at)}
         res (merge event event-gen)
-        result (k/exec-raw
-                 (str
-                    "INSERT INTO events ("
-                    (keys->str res)
-                    ") VALUES ("
-                    (serialize (merge res) ", ")
-                    ");"
-                    ; ") ON CONFLICT (events_title_start) DO NOTHING;"
-                    ))]
-    (if (empty? result)
-      (log/debug "empty result")
-      (log/debug result))))
+        keys (str "(" (keys->str res) ")")
+        values (str "(" (serialize (merge res) ", ") ")" )
+        sql-str (str "INSERT INTO events " keys " VALUES " values " ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title;")
+        result (k/exec-raw [sql-str])]
+     (log/debug result :res)
+    (if (empty? res)
+      (log/debug "Empty res")
+      (log/debug "Non-empty res"))))
 
 (defn create
   "Creates event in database"
@@ -91,3 +88,4 @@
     {:status 200
      :body {:criteria criteria
             :results events}}))
+
