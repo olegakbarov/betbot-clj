@@ -14,7 +14,7 @@
 (defn serialize [m sep] (apply str (concat (interpose sep (map wrap-in-parens (vals m))))))
 (defn keys->str [m] (clojure.string/replace (clojure.string/join ", " (keys m)) #":" ""))
 
-(defn upsert
+(defn insert
   "Creates event only in event with this title+starts_at combo do not exists"
   [{:keys [starts_at ends_at] :as event}]
   (let [event-gen {:created_at (t/now)
@@ -27,6 +27,7 @@
         sql-str (str "INSERT INTO events " keys " VALUES " values " ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title;")
         result (k/exec-raw [sql-str])]
      (log/debug result :res)
+     ;; Not sure what we do here
     (if (empty? res)
       (log/debug "Empty res")
       (log/debug "Non-empty res"))))

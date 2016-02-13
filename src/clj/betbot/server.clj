@@ -28,6 +28,5 @@
   (if (env :dev)
     (telegram-polling/start!)
     (telegram-api/set-webhook (str (env :host) "/api/telegram/" (env :telegram-token))))
-  ;; not sure about placing it here, but..
   (scraper/launch)
   (run-jetty app {:port port :join? false}))
