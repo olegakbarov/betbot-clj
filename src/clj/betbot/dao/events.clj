@@ -14,7 +14,7 @@
 (defn serialize [m sep] (apply str (concat (interpose sep (map wrap-in-parens (vals m))))))
 (defn keys->str [m] (clojure.string/replace (clojure.string/join ", " (keys m)) #":" ""))
 
-(defn insert
+(defn upsert
   "Creates event only in event with this title+starts_at combo do not exists"
   [{:keys [starts_at ends_at] :as event}]
   (let [event-gen {:created_at (t/now)
@@ -24,10 +24,15 @@
         res (merge event event-gen)
         keys (str "(" (keys->str res) ")")
         values (str "(" (serialize (merge res) ", ") ")" )
-        sql-str (str "INSERT INTO events " keys " VALUES " values " ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title;")
+        ;; when there's a conflict in starts_at (aka match rescheduled) — we simply
+        ;; update row with new fields (got access to them from EXCLUDED table)
+        sql-str (str
+                  "INSERT INTO events " keys
+                  " VALUES " values
+                  " ON CONFLICT (title) DO UPDATE SET starts_at = EXCLUDED.starts_at;")
         result (k/exec-raw [sql-str])]
      (log/debug result :res)
-     ;; Not sure what we do here
+     ;; Not sure what we do next here
     (if (empty? res)
       (log/debug "Empty res")
       (log/debug "Non-empty res"))))

@@ -25,13 +25,14 @@
   (log/debug events)
   (doseq [event events]
     (try
-      (events/insert event)
+      (events/upsert event)
     ;; TODO! custom Exception on duplicate
     (catch Exception e
       (log/warn "Was trying to save duplicate, but we are fine", (.getNextException e)))
     (catch Exception e
       (log/error "Ouch, save failed")))))
 
+;; TODO rewrite with memoization
 (defn url-constructor
   "Creates a url either with timestamp param or gets the timestamp"
   [week timestamp]
@@ -84,7 +85,6 @@
 
 (defn begin-scrape
   [t opts]
-  (log/debug "im alive")
   (let [timestamp (-> (url-constructor week nil)
                        http/get
                        :body

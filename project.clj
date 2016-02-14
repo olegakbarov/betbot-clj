@@ -26,7 +26,6 @@
 
                  ;; Database
                  [korma "0.4.2"]
-                 [ragtime "0.5.2"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
 
                  ;; Misc
@@ -42,7 +41,6 @@
 
   :plugins [[lein-environ "1.0.1"]
             [lein-cljsbuild "1.1.1"]
-            [ragtime/ragtime.lein "0.3.6"]
             [lein-asset-minifier "0.2.2"
              :exclusions [org.clojure/clojure]]]
 
@@ -51,9 +49,6 @@
   :ring {:handler betbot.handler/app
          :init betbot.telegram.polling/start!
          :destroy betbot.telegram.polling/stop!}
-
-  :ragtime {:migrations ragtime.sql.files/migrations
-            :database ~(System/getenv "jdbc:postgresql://localhost:5432/betbot?user=betbot&password=yolo")}
 
   :clean-targets ^{:protect false} [:target-path
                                    [:cljsbuild :builds :app :compiler :output-dir]

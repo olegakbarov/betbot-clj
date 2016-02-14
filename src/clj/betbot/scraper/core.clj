@@ -5,7 +5,7 @@
             [cronj.core :refer :all]))
 
 
-;; this task fetch data every two seconds
+;; this task fetch data every 30 minutes
 (def monitor-api
   {:id "Periodically fetch data from API and compare it with existing in DB"
    :handler premiership/begin-scrape
