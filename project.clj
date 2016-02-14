@@ -26,8 +26,10 @@
 
                  ;; Database
                  [korma "0.4.2"]
-                 [ragtime "0.5.2"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
+
+                 ;; Misc
+                 [im.chit/cronj "1.4.4"]
 
                  ;; Frontend
                  [reagent "0.5.1"]                          ; React rendering wrapper
@@ -49,8 +51,8 @@
          :destroy betbot.telegram.polling/stop!}
 
   :clean-targets ^{:protect false} [:target-path
-                                    [:cljsbuild :builds :app :compiler :output-dir]
-                                    [:cljsbuild :builds :app :compiler :output-to]]
+                                   [:cljsbuild :builds :app :compiler :output-dir]
+                                   [:cljsbuild :builds :app :compiler :output-to]]
 
   :source-paths ["src/clj" "src/cljc"]
   :resource-paths ["resources" "target/cljsbuild"]

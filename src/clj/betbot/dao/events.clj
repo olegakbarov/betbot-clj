@@ -5,14 +5,41 @@
             [clj-time.format :as f]
             [clj-time.coerce :refer [to-sql-time]]
             [korma.core :as k]
+            [clojure.java.jdbc :as j]
             [taoensso.timbre :as log]))
 
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 
+(defn wrap-in-parens [item] (str \' item \'))
+(defn serialize [m sep] (apply str (concat (interpose sep (map wrap-in-parens (vals m))))))
+(defn keys->str [m] (clojure.string/replace (clojure.string/join ", " (keys m)) #":" ""))
+
+(defn upsert
+  "Creates event only in event with this title+starts_at combo do not exists"
+  [{:keys [starts_at ends_at] :as event}]
+  (let [event-gen {:created_at (t/now)
+                   :updated_at (t/now)
+                   :ends_at ends_at ;; :ends_at already formatted in core/process-results
+                   :starts_at (f/parse iso-8601 starts_at)}
+        res (merge event event-gen)
+        keys (str "(" (keys->str res) ")")
+        values (str "(" (serialize (merge res) ", ") ")" )
+        ;; when there's a conflict in starts_at (aka match rescheduled) — we simply
+        ;; update row with new fields (got access to them from EXCLUDED table)
+        sql-str (str
+                  "INSERT INTO events " keys
+                  " VALUES " values
+                  " ON CONFLICT (title) DO UPDATE SET starts_at = EXCLUDED.starts_at;")
+        result (k/exec-raw [sql-str])]
+     (log/debug result :res)
+     ;; Not sure what we do next here
+    (if (empty? res)
+      (log/debug "Empty res")
+      (log/debug "Non-empty res"))))
+
 (defn create
   "Creates event in database"
   [{:keys [starts_at ends_at] :as event-param}]
-  (log/debug "Incomming event: " event-param)
   (let [event-gen {:created_at (t/now)
                    :updated_at (t/now)
                    :starts_at  (f/parse iso-8601 starts_at)
@@ -74,3 +101,4 @@
     {:status 200
      :body {:criteria criteria
             :results events}}))
+
