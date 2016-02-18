@@ -1,6 +1,7 @@
 (ns betbot.handler
   "Root handler for HTTP server"
   (:require [environ.core :refer [env]]
+            [taoensso.timbre :as log]
             [compojure.core :refer [GET POST PUT DELETE defroutes context]]
             [compojure.route :refer [not-found resources]]
 
@@ -22,13 +23,46 @@
     (POST "/telegram/:token/" {update :body} (telegram-logic/update-handler update))
 
     (context "/events" []
-      (GET "/" {query :params} (events/search query))
-      (POST "/" {event-param :body} (events/create event-param))
+      (GET "/" {query :params}
+        (let [result (events/search query)]
+          (if (empty? result)
+             {:status 404
+              :body "No eventh with this id"}
+             {:status 200
+              :body result})))
+
+      (POST "/" {event-param :body}
+         (let [result (events/create event-param)]
+           (if (empty? result)
+             {:status 500
+              :body "Can't create event"}
+             {:status 201
+              :body result})))
 
       (context "/:id" [id]
-        (GET "/" [] (events/find-one id))
-        (PUT "/" {event :body} (events/update-one id event))
-        (DELETE "/" [] (events/delete id)))))
+        (GET "/" []
+           (let [result (events/find-one id)]
+              (if (empty? result)
+               {:status 404
+                :body "Can't find the event"}
+               {:status 200
+                :body result})))
+
+        (PUT "/" {event :body}
+           (let [result (events/update-one id event)]
+             (if (not= result 1)
+               {:status 500
+                :body "Bad request"}
+               {:status 200
+                :body (str "Succesfully updated sting with id " id)})))
+
+      (DELETE "/" []
+         (let [result (events/delete id)]
+           (if (not= result 1)
+              {:status 500
+               :body "Bad request"}
+              {:status 200
+               :body (str "Succesfully deleted event with id " id)}))))))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))
