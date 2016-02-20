@@ -3,8 +3,15 @@
   (:require [environ.core :refer [env]]
             [clj-time.jdbc]
             [korma.db :refer [defdb postgres]]
-            [korma.core :refer [defentity pk table has-many has-one entity-fields]]
-            [betbot.util.db :as db-util]))
+            [betbot.util.db :as db-util]
+            [korma.core :refer [entity-fields
+                                many-to-many
+                                belongs-to
+                                defentity
+                                has-many
+                                has-one
+                                table
+                                pk]]))
 
 (defdb db (db-util/korma-connection-map (env :database-url)))
 
@@ -35,6 +42,9 @@
 (defentity bets
   (pk :id)
   (table :bets)
-  (has-many users)
-  (has-one events)
-  (entity-fields :result :value))
+  (belongs-to users {:fk :user_id})
+  (belongs-to events {:fk :event_id})
+  (entity-fields
+    :outcome
+    :created_at))
+
