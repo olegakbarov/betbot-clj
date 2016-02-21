@@ -21,7 +21,12 @@
   (pk :id)
   (table :users)
   (has-many bets)
-  (entity-fields :email :role))
+  ;; Based on Telegram API
+  (entity-fields
+    :telegram_id
+    :first_name
+    :last_name
+    :username))
 
 (defentity events
   (pk :id)
@@ -47,4 +52,3 @@
   (entity-fields
     :outcome
     :created_at))
-

@@ -27,6 +27,15 @@
   []
   (k/select m/users (k/where {:telegram_id 121762741})))
 
+(defn check-user
+  "Finds or creates user"
+  [{:keys [id] :as user}]
+  (let [exists (k/select m/users
+                         (k/where {:telegram_id id}))]
+    (if (empty? exists)
+      (u/create user)
+      (log/debug "User already exists"))))
+
 (defn update-handler [update]
   (log/debug "Got update from bot:\n"
              (json/generate-string update {:pretty true}))
