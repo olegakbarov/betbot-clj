@@ -95,7 +95,8 @@
   (let [item (k/select m/events
                  (k/where {:starts_at [>= (k/sqlfn now)]}))
         ;; generete nice response
-        result (-> (into {} item)
-                   :result_str
-                   json/generate-string)]
-     result))
+        ; result (-> (into {} item)
+        ;            :result_str
+        ;            json/generate-string)
+        ]
+     "Not ready yet"))

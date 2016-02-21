@@ -19,9 +19,16 @@
         result (k/insert m/users (k/values new-user))]
     result))
 
+
 (defn find-one
   "Find one user by id"
   [id]
   (let [result (k/select m/users
                  (k/where {:id (Integer/parseInt id)}))]
     result))
+
+
+(defn find-by-telegram-id
+  "Find user by Telegram"
+  [id]
+  (k/select m/users (k/where {:telegram_id id})))
