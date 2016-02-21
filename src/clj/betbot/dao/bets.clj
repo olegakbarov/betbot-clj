@@ -11,6 +11,7 @@
 (defn create
   "Place bet on event"
   [user-id event-id outcome]
+  ;; handle errors here (try/catch maybe?)
   (let [event (k/select m/events
                  (k/where {:id event-id}))
         sql (str "INSERT INTO bets ("
