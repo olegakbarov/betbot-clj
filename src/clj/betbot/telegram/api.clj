@@ -1,6 +1,7 @@
 (ns betbot.telegram.api
   (:require [taoensso.timbre :as log]
             [environ.core :refer [env]]
+            [cheshire.core :as json]
             [clj-http.client :as http]))
 
 (def base-url "https://api.telegram.org/bot")

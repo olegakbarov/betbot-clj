@@ -56,13 +56,13 @@
                {:status 200
                 :body (str "Succesfully updated sting with id " id)})))
 
-      (DELETE "/" []
-         (let [result (events/delete id)]
-           (if (not= result 1)
-              {:status 500
-               :body "Bad request"}
-              {:status 200
-               :body (str "Succesfully deleted event with id " id)}))))))
+        (DELETE "/" []
+           (let [result (events/delete id)]
+             (if (not= result 1)
+                {:status 500
+                 :body "Bad request"}
+                {:status 200
+                 :body (str "Succesfully deleted event with id " id)}))))))
 
   ; catch-all handler to allow client-side routing
   (GET "/*" [] layout/reagent-page))

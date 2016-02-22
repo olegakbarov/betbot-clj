@@ -10,6 +10,7 @@
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
                  [org.clojure/core.async "0.2.374"]
                  [com.taoensso/timbre "4.1.4"]              ; Clojure/Script logging
+                 [org.clojure/core.match "0.3.0-alpha4"]    ; Pattern matching
 
                  [ring "1.4.0"]
                  [ring-server "0.4.0"]
@@ -97,7 +98,7 @@
                    :env {:dev true
                          :host "http://localhost:3000"
                          :database-url "postgres://betbot:yolo@localhost:5432/betbot"
-                         :telegram-token "192904624:AAH9llLQt2DXMVFKtLGg1L5hCqzg9CvM53o"}}
+                         :telegram-token "159316364:AAFbU5ibzv0OH3qzhcNx0CjGRcxQsznpC0s"}}
 
              :uberjar {:hooks [minify-assets.plugin/hooks]
                        :prep-tasks [["less" "once"]

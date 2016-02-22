@@ -16,7 +16,7 @@
 
 (def ^:private iso-8601 (f/formatter "yyyy-MM-dd'T'HH:mm:ss"))
 (def root-url "http://live.premierleague.com/syndicationdata")
-;; TODO Hardcoded week
+;; TODO! Hardcoded week
 (def week 29)
 
 (defn store-results
@@ -32,24 +32,21 @@
     (catch Exception e
       (log/error "Ouch, save failed")))))
 
-;; TODO rewrite with memoization
+;; arity overloading :cool:
 (defn url-constructor
   "Creates a url either with timestamp param or gets the timestamp"
-  [week timestamp]
-  (str
-    root-url
-    "/competitionId=8"
-    "/seasonId=2015"
-    "/gameWeekId=" week
-    (if (nil? timestamp)
-      "/sentinel.json"
-      (str "/scores.json?" timestamp))))
+  ([week](str root-url
+    "/competitionId=8/seasonId=2015/gameWeekId=" week "/sentinel.json"))
+  ([week timestamp] (str root-url
+    "/competitionId=8/seasonId=2015/gameWeekId=" week "/scores.json?" timestamp)))
 
+
+;; TODO! parse as json and remove nasty "gets"
 (defn process-results
   "Processes received date"
   [data]
-  (let [scores (into [] (flatten (map #(get % "Scores") data)))
-        result (into [] (map (fn [scores]
+  (let [scores (vec (flatten (map #(get % "Scores") data)))
+        result (vec (map (fn [scores]
           (let [title (str (-> scores (get "HomeTeam")(get "Name")) " vs " (-> scores (get "AwayTeam") (get "Name")))
                 starts_at (get scores "DateTime")
                 ends_at (t/plus (f/parse iso-8601 (get scores "DateTime")) (t/hours 2))
@@ -57,24 +54,23 @@
                 awayteam (-> scores (get "AwayTeam")(get "Name"))
                 hometeam-score (-> scores (get "HomeTeam")(get "Score"))
                 awayteam-score (-> scores (get "AwayTeam")(get "Score"))]
-               {:title title
-                :starts_at starts_at
-                :ends_at ends_at
-                :subcategory "Soccer"
-                :category "Sport"
-                :status (if (t/before? (t/now) (f/parse iso-8601 starts_at)) "Match is scheduled" "Match is over")
-                :result_str (str hometeam " " hometeam-score":" awayteam-score" " awayteam)
-                :outcome (case
-                           (= hometeam-score awayteam-score) 0
-                           (> hometeam-score awayteam-score) 1
-                           (< hometeam-score awayteam-score) 2
-                           (t/before? (t/now) (f/parse iso-8601 starts_at)) 99)
-                })) scores))]
-        (store-results result)))
+           {:title title
+            :starts_at starts_at
+            :ends_at ends_at
+            :subcategory "Soccer"
+            :category "Sport"
+            :status (if (t/before? (t/now) (f/parse iso-8601 starts_at)) "Match is scheduled" "Match is over")
+            :result_str (str hometeam " " hometeam-score":" awayteam-score" " awayteam)
+            :outcome (case
+                       (= hometeam-score awayteam-score) 0
+                       (> hometeam-score awayteam-score) 1
+                       (< hometeam-score awayteam-score) 2
+                       (t/before? (t/now) (f/parse iso-8601 starts_at)) 99)
+            })) scores))]
+    (store-results result)))
 
 (defn get-data
   [timestamp week]
-  (log/debug "Getting actual data with the timestamp: " timestamp)
   (log/debug (url-constructor week timestamp))
   (let [data (-> (url-constructor week timestamp)
                   http/get
@@ -83,13 +79,18 @@
                   (get "Data"))]
     (process-results data)))
 
+(defn get-timestamp [week]
+  "Gets current timestamp"
+   (log/debug url-constructor week)
+   (-> (url-constructor week)
+       http/get
+       :body
+       parse-string
+       (get "scores")))
+
 (defn begin-scrape
   [t opts]
-  (let [timestamp (-> (url-constructor week nil)
-                       http/get
-                       :body
-                       parse-string
-                       (get "scores"))]
+  (let [timestamp (memoize (get-timestamp week))]
     (if (not= 0 timestamp)
       ;; TODO Hardcoded week
       (get-data timestamp week)
