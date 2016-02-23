@@ -1,6 +1,7 @@
 (ns betbot.telegram.logic
   "Describes how bot should handle incomming messages"
   (:require [taoensso.timbre :as log]
+            [cheshire.core :as json]
             [betbot.dao.models :as m]
             [cheshire.core :as json]
             [korma.core :as k]
@@ -11,28 +12,59 @@
             [clojure.core.match :refer [match]]
             [betbot.telegram.api :as api]))
 
-(def userid 3)
 
-; Assume we have a valid command with following signature `/cmd val mod`
-(defn parse-command
-  "Parses command and returns hashmap"
-  [text]
-  (let [command (first (str/split text #" "))
-        value (second (str/split text #" "))
-        modifier (nth (str/split text #" ") 2)]
-  {:command command
-   :event-id value
-   :outcome modifier}))
+(def templates {:welcome "Hello! Here's how i work:"
+                :bet-accepted "Bet accepted! 😎 We'll notify you."
+                :error "Woops.. something went wrong 😱"
+                :dunno "I don't know this command 🙈"})
 
 
-(defn check-user
-  "Finds or creates user"
-  [{:keys [id] :as user}]
-  (let [exists (k/select m/users
-                         (k/where {:telegram_id id}))]
-    (if (empty? exists)
-      (users/create user)
-      (log/debug "User already exists"))))
+(defn process-event
+  "Formats the item from db"
+  [item]
+  (str
+    "EPL001 " (-> item :title) "\n"))
+
+
+(defn get-events
+  "Get top 5 events from db and format them for sending out to user"
+  []
+  (let [events (events/get-hot-events)]
+   (str
+      "Next matches available for betting are:\n"
+      (reduce str (mapv process-event events)))))
+
+
+(defn get-keyboard
+  "Generates options map with custom keyboard"
+  [& args]
+  {:keyboard (vec (map #(vector %) args))
+   :one_time_keyboard true})
+
+
+(defn command-trap
+  "Generates command-recognition patterns"
+  [text telegram_id chat event-id]
+  (let [outcome 2
+        ;; for some bizarro reason k/select retruns everything but the id
+        sql (str "SELECT * FROM users WHERE telegram_id = ?;")
+        user-id (:id (into {} (k/exec-raw [sql [telegram_id]] :results)))]
+        (log/debug (get-events))
+    (match [text]
+           ["/start"] (api/send-message (:id chat)
+                                        (:welcome templates)
+                                        (get-keyboard "Soccer" "Misc"))
+           ["/events"] (api/send-message (:id chat)
+                                         (get-events))
+           ["bet"] (doseq []
+                    (if (= 1 (first (bets/create user-id event-id outcome)))
+                      (api/send-message (:id chat)
+                                        (:bet-accepted templates)
+                                        (get-keyboard "A" "B"))
+                      (api/send-message (:id chat)
+                                        (:error templates))))
+           :else (api/send-message (:id chat)
+                                   (:dunno templates)))))
 
 
 (defn update-handler
@@ -42,19 +74,5 @@
              (json/generate-string update {:pretty true}))
   (let [chat (-> update :message :chat)
         text (-> update :message :text)
-        telegram_id (-> update :message :from :id)
-        ;; for some bizarro reason k/select retruns everything but the id
-        sql (str "SELECT * FROM users WHERE telegram_id = ?;")
-        user-id (:id (into {} (k/exec-raw [sql [telegram_id]] :results)))
-        command (:command (parse-command text))
-        event-id (Integer/parseInt (:event-id (parse-command text)))
-        outcome (Integer/parseInt (:outcome (parse-command text)))]
-    (match [command]
-           ["/events"] (api/send-message (:id chat)
-                          (events/get-hot-events))
-           ["yo"] (doseq []
-                    (if (= 1 (first (bets/create user-id event-id outcome)))
-                      (api/send-message (:id chat) "Bet accepted! 😎")
-                      (api/send-message (:id chat) "Woops.. something went wrong 😱")))
-           :else (api/send-message (:id chat) "I dont know this command 🙈"))))
-
+        telegram_id (-> update :message :from :id)]
+    (command-trap text telegram_id chat 111)))

@@ -16,6 +16,7 @@
 
 (defn keys->str [m] (clojure.string/replace (clojure.string/join ", " (keys m)) #":" ""))
 
+
 (defn upsert
   "Creates event only in event with this title do not exists"
   [{:keys [starts_at ends_at] :as event}]
@@ -35,6 +36,7 @@
         result (k/exec-raw [sql-str])]
     result))
 
+
 (defn create
   "Creates event in database"
   [{:keys [starts_at ends_at] :as event-param}]
@@ -46,12 +48,14 @@
         result (k/insert m/events (k/values event))]
     result))
 
+
 (defn find-one
   "go to db and get one event"
   [id]
   (let [result (k/select m/events
                  (k/where {:id (Integer/parseInt id)}))]
     result))
+
 
 ;; TODO: add validation that will allow only fields from whitelist to be updated
 (defn update-one
@@ -64,6 +68,7 @@
                  (k/where {:id (Integer/parseInt id)}))]
     result))
 
+
 (defn delete
   "Deletes single event with provided id"
   [id]
@@ -71,6 +76,7 @@
                   (k/where {:id (Integer/parseInt id)}))]
     (log/debug result)
     result))
+
 
 (defn- query->criteria
   "Transforms ring string-based query to criteria object"
@@ -80,6 +86,7 @@
    :limit   (read-string (:limit query "10"))
    :offset  (read-string (:offset query "0"))})
 
+
 (defn search
   "Searches backend for events"
   [query]
@@ -88,15 +95,11 @@
      {:criteria criteria
       :results events}))
 
-;; TODO remove dummy data and add today's events logic
+
 (defn get-hot-events
   "Finds hot events for today"
   []
-  (let [item (k/select m/events
-                 (k/where {:starts_at [>= (k/sqlfn now)]}))
-        ;; generete nice response
-        ; result (-> (into {} item)
-        ;            :result_str
-        ;            json/generate-string)
-        ]
-     "Not ready yet"))
+  (let [result (k/select m/events
+                 (k/limit 5)
+                 (k/where {:starts_at [>= (k/sqlfn now)]}))]
+     result))

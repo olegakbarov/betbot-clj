@@ -29,6 +29,16 @@
 
 
 (defn find-by-telegram-id
-  "Find user by Telegram"
+  "Find user by Telegram id"
   [id]
   (k/select m/users (k/where {:telegram_id id})))
+
+
+(defn find-or-create
+  "Finds or creates user"
+  [{:keys [id] :as user}]
+  (let [exists (k/select m/users
+                         (k/where {:telegram_id id}))]
+    (if (empty? exists)
+      (create user)
+      (log/debug "User already exists"))))
