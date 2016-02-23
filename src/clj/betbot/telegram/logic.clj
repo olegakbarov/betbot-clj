@@ -13,58 +13,77 @@
             [betbot.telegram.api :as api]))
 
 
-(def templates {:welcome "Hello! Here's how i work:"
+(def templates {:welcome (str "Hello! Here's how i work:\n\n"
+                               "/events — get list of events available for betting\n\n"
+                               "/about — learn more about team behind @bet2bot\n\n")
                 :bet-accepted "Bet accepted! 😎 We'll notify you."
-                :error "Woops.. something went wrong 😱"
+                :error "Woops.. something went wrong 😱 It's not you — it's us. Please get back a little later."
                 :dunno "I don't know this command 🙈"})
 
 
 (defn process-event
   "Formats the item from db"
   [item]
-  (str
-    "EPL001 " (-> item :title) "\n"))
+  (str "[" (-> item :id) "]" " " (-> item :title) "\n"))
+
+
+(defn get-ids
+  "Generate vector of ids"
+  [item]
+  (vector (str (-> item :id))))
+
+
+(defn generate-keyboard
+  "Generates custom keyboard"
+  [& args]
+  ;; this peek-peek is shitty.
+  (let [items (peek (peek (mapv #(vector %) args)))]
+    {:keyboard (into [] (map #(into [] (flatten %)) (partition 3 items)))
+     :one_time_keyboard true}))
 
 
 (defn get-events
-  "Get top 5 events from db and format them for sending out to user"
+  "Get 9 events from db and format them for sending out to user"
   []
   (let [events (events/get-hot-events)]
-   (str
-      "Next matches available for betting are:\n"
-      (reduce str (mapv process-event events)))))
+   {:keyboard (generate-keyboard (mapv get-ids events))
+    :string (str
+              "Next matches are available for betting:\n"
+              (reduce str (mapv process-event events)))}))
 
 
-(defn get-keyboard
-  "Generates options map with custom keyboard"
-  [& args]
-  {:keyboard (vec (map #(vector %) args))
-   :one_time_keyboard true})
+(defn parse-command
+  "Parse non-standart command"
+  [msg chat-id user-id]
+  (let [outcome 2
+        event-id 111]
+    ;; TODO remove hardcode
+    ;; handle parsing of command and betting logic here
+    (doseq []
+      (if (= 1 (first (bets/create user-id event-id outcome)))
+        (api/send-message (:id chat-id)
+                          (:bet-accepted templates))
+        (api/send-message (:id chat-id)
+                          (:error templates))))))
 
 
 (defn command-trap
-  "Generates command-recognition patterns"
-  [text telegram_id chat event-id]
-  (let [outcome 2
-        ;; for some bizarro reason k/select retruns everything but the id
-        sql (str "SELECT * FROM users WHERE telegram_id = ?;")
+  "This catches basic command, and if none caught pass message to next handler"
+  [msg telegram_id chat]
+  ;; For some bizarro reason k/select retruns everything but the id
+  (let [sql (str "SELECT * FROM users WHERE telegram_id = ?;")
         user-id (:id (into {} (k/exec-raw [sql [telegram_id]] :results)))]
-        (log/debug (get-events))
-    (match [text]
+    (match [msg]
            ["/start"] (api/send-message (:id chat)
                                         (:welcome templates)
-                                        (get-keyboard "Soccer" "Misc"))
+                                        {:keyboard (vector [["/events"]["/about"]])
+                                         :one_time_keyboard true})
+           ["/about"] (api/send-message (:id chat)
+                                         "Made by Oleg Akbarov & Anton Chebotaev")
            ["/events"] (api/send-message (:id chat)
-                                         (get-events))
-           ["bet"] (doseq []
-                    (if (= 1 (first (bets/create user-id event-id outcome)))
-                      (api/send-message (:id chat)
-                                        (:bet-accepted templates)
-                                        (get-keyboard "A" "B"))
-                      (api/send-message (:id chat)
-                                        (:error templates))))
-           :else (api/send-message (:id chat)
-                                   (:dunno templates)))))
+                                         (-> (get-events) :string)
+                                         (-> (get-events) :keyboard))
+           :else (parse-command msg chat user-id))))
 
 
 (defn update-handler
@@ -73,6 +92,7 @@
   (log/debug "Got update from bot:\n"
              (json/generate-string update {:pretty true}))
   (let [chat (-> update :message :chat)
-        text (-> update :message :text)
+        msg (-> update :message :text)
         telegram_id (-> update :message :from :id)]
-    (command-trap text telegram_id chat 111)))
+    ;; TODO Remove hardcode
+    (command-trap msg telegram_id chat)))

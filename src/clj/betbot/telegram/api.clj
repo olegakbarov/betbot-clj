@@ -28,16 +28,11 @@
 
 (defn send-message
   "Sends message to user"
+  ([chat-id text] send-message chat-id text {})
   ([chat-id text opts]
     (let [url (str base-url token "/sendMessage")
           query {:chat_id chat-id
                  :text text
                  :reply_markup (json/generate-string opts)}
           resp (http/get url {:as :json :query-params query})]
-      (log/debug "Got response from server" (:body resp))))
-   ([chat-id text]
-     (let [url (str base-url token "/sendMessage")
-           query {:chat_id chat-id
-                  :text text}
-           resp (http/get url {:as :json :query-params query})]
-       (log/debug "Got response from server" (:body resp)))))
+      (log/debug "Got response from server" (:body resp)))))

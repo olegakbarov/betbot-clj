@@ -74,7 +74,6 @@
   [id]
   (let [result (k/delete m/events
                   (k/where {:id (Integer/parseInt id)}))]
-    (log/debug result)
     result))
 
 
@@ -99,7 +98,7 @@
 (defn get-hot-events
   "Finds hot events for today"
   []
-  (let [result (k/select m/events
-                 (k/limit 5)
-                 (k/where {:starts_at [>= (k/sqlfn now)]}))]
-     result))
+  ;; korma still do not return id
+  (let  [sql (str "SELECT * FROM events WHERE starts_at > NOW() LIMIT 9;")
+         result (k/exec-raw [sql []] :results)]
+    result))
