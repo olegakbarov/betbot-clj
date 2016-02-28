@@ -1,17 +1,17 @@
 (ns betbot.telegram.api
   (:require [taoensso.timbre :as log]
-            [environ.core :refer [env]]
+            [omniconf.core :as cfg]
             [cheshire.core :as json]
             [clj-http.client :as http]))
 
 (def base-url "https://api.telegram.org/bot")
 
-(def token (env :telegram-token))
+(defn token [] (cfg/get :telegram-token))
 
 (defn get-updates
   "Receive updates from Bot via long-polling endpoint"
   [{:keys [limit offset timeout]}]
-  (let [url (str base-url token "/getUpdates")
+  (let [url (str base-url (token) "/getUpdates")
         query {:timeout (or timeout 1)
                :offset  (or offset 0)
                :limit   (or limit 100)}
@@ -21,7 +21,7 @@
 (defn set-webhook
   "Register WebHook to receive updates from chats"
   [webhook-url]
-  (let [url   (str base-url token "/setWebhook")
+  (let [url   (str base-url (token) "/setWebhook")
         query {:url webhook-url}
         resp  (http/get url {:as :json :query-params query})]
     (log/debug "Registering WebHook, Telegram returned:" (:body resp))))
@@ -30,7 +30,7 @@
   "Sends message to user"
   ([chat-id text] send-message chat-id text {})
   ([chat-id text opts]
-    (let [url (str base-url token "/sendMessage")
+    (let [url (str base-url (token) "/sendMessage")
           query {:chat_id chat-id
                  :text text
                  :reply_markup (json/generate-string opts)}

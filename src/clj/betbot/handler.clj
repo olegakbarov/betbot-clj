@@ -1,8 +1,6 @@
 (ns betbot.handler
   "Root handler for HTTP server"
-  (:require [environ.core :refer [env]]
-            [taoensso.timbre :as log]
-            [compojure.core :refer [GET POST PUT DELETE defroutes context]]
+  (:require [compojure.core :refer [GET POST PUT DELETE defroutes context]]
             [compojure.route :refer [not-found resources]]
 
             [ring.util.response :refer [redirect]]
@@ -10,6 +8,7 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [prone.middleware :refer [wrap-exceptions]]
+            [omniconf.core :as cfg]
 
             [betbot.util.clj-time-cheshire]                 ; adds support for DateTime serialization
             [betbot.dao.events :as events]
@@ -77,7 +76,7 @@
                     (wrap-json-response)
                     (wrap-json-body {:keywords? true :bigdecimals? true})
                     (wrap-defaults defaults))]
-    (if (env :dev)
+    (if (cfg/get :dev)
       (-> handler
           wrap-exceptions
           wrap-reload)

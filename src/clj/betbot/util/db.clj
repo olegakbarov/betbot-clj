@@ -21,8 +21,8 @@
 (defn korma-connection-map
   "Converts DATABASE_URL to a map that you can pass to Korma's
   defdb fn"
-  [heroku-database-url]
-  (let [db-uri (create-uri heroku-database-url)
+  [database-url]
+  (let [db-uri (create-uri database-url)
         [username password] (parse-username-and-password db-uri)]
     {:classname "org.postgresql.Driver"
      :subprotocol "postgresql"

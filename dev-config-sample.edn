@@ -1,0 +1,6 @@
+{:dev true
+ :port 3000
+ :host "http://localhost:3000"
+ :database-url "PLACE YOUR URL HERE"
+ :telegram-token "PLACE YOUR TOKEN HERE"
+ }

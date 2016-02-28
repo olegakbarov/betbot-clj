@@ -1,6 +1,6 @@
 (ns betbot.layout
   "Layouts for server-side rendered pages"
-  (:require [environ.core :refer [env]]
+  (:require [omniconf.core :as cfg]
             [hiccup.core :refer [html]]
             [hiccup.page :refer [include-js include-css]]
             [cheshire.core :as json]))
@@ -11,11 +11,11 @@
      [:head
       [:meta {:charset "utf-8"}]
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-      [:title (when (env :dev) "DEV - ") "BetBot App"]
+      [:title (when (cfg/get :dev) "DEV - ") "BetBot App"]
 
       (include-css "//cdn.jsdelivr.net/octicons/3.3.0/octicons.css")
       (include-css "//oss.maxcdn.com/semantic-ui/2.1.7/semantic.min.css")
-      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))]
+      (include-css (if (cfg/get :dev) "css/site.css" "css/site.min.css"))]
 
      [:body
       [:div#app [:div.signal]]
