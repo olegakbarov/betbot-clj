@@ -1,0 +1,5 @@
+DEV=true
+PORT=3000
+HOST=http://localhost:3000
+DATABASE_URL=postgres://betbot:yolo@localhost:5432/betbot
+TELEGRAM_TOKEN=192904624:AAH9llLQt2DXMVFKtLGg1L5hCqzg9CvM53o

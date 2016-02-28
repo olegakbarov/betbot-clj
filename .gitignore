@@ -16,3 +16,4 @@ pom.xml.asc
 /.env
 *.min.*
 keys.md
+dev-config.edn
