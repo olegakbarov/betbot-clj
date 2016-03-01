@@ -18,6 +18,7 @@
                     :default 3000}
              :host {:description "Where service is deployed"
                     :type :string
+                    :default "http://localhost"
                     :required true}
              :database-url {:description "URL to connect to Postgres DB"
                             :type :string
@@ -33,6 +34,7 @@
   (models/init-db)
   (telegram-polling/start!))
 
+;; rename maybe?
 (defn ring-init []
   (let [local-config "dev-config.edn"]
     (if (.exists (io/as-file local-config))
@@ -43,6 +45,6 @@
 (defn -main [& args]
   (cfg/populate-from-env)
   (cfg/populate-from-cmd args)
-  (init)
+  (ring-init)
   (log/info "Starting server")
   (run-jetty app {:port (cfg/get :port) :join? false}))

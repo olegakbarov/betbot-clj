@@ -7,6 +7,7 @@
             [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
             [korma.db :as korma]
+            [taoensso.timbre :as log]
             [korma.core :refer [entity-fields
                                 many-to-many
                                 belongs-to
@@ -20,6 +21,7 @@
   (let [url  (cfg/get :database-url)
         spec (db-util/korma-connection-map url)
         db   (korma/create-db spec)]
+    (log/debug db)
     (korma/default-connection db)))
 
 (defn migrate []
