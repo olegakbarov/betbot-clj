@@ -1,6 +1,5 @@
 (ns betbot.server
   "Responsible for starting application from command line"
-  (:gen-class)
   (:require [clojure.java.io :as io]
             [taoensso.timbre :as log]
             [ring.adapter.jetty :refer [run-jetty]]
@@ -8,7 +7,8 @@
 
             [betbot.handler :refer [app]]
             [betbot.dao.models :as models]
-            [betbot.telegram.polling :as telegram-polling]))
+            [betbot.telegram.polling :as telegram-polling])
+ (:gen-class))
 
 (cfg/define {:dev {:description "Environment mode"
                    :type :boolean
